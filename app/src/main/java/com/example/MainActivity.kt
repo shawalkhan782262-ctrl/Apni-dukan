@@ -204,20 +204,6 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
 
-                                        IconButton(
-                                            onClick = {
-                                                isDarkMode = !isDarkMode
-                                                themeSp.edit().putBoolean("is_dark_mode", isDarkMode).apply()
-                                            },
-                                            modifier = Modifier.testTag("theme_toggle_icon_btn")
-                                        ) {
-                                            Icon(
-                                                imageVector = if (isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
-                                                contentDescription = "Theme Toggle",
-                                                tint = if (isDarkMode) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                        }
                                         Switch(
                                             checked = isDarkMode,
                                             onCheckedChange = { checked ->

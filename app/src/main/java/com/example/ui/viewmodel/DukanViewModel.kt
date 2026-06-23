@@ -129,7 +129,7 @@ class DukanViewModel(private val repository: DukanRepository) : ViewModel() {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Product actions
-    fun addProduct(name: String, costPrice: Double, sellingPrice: Double, stock: Int, category: String, minStockThreshold: Int = 5) {
+    fun addProduct(name: String, costPrice: Double, sellingPrice: Double, stock: Int, category: String, minStockThreshold: Int = 5, rating: Int = 5) {
         viewModelScope.launch {
             repository.insertProduct(
                 Product(
@@ -138,7 +138,8 @@ class DukanViewModel(private val repository: DukanRepository) : ViewModel() {
                     sellingPrice = sellingPrice,
                     stock = stock,
                     category = category,
-                    minStockThreshold = minStockThreshold
+                    minStockThreshold = minStockThreshold,
+                    rating = rating
                 )
             )
         }
@@ -248,6 +249,7 @@ class DukanViewModel(private val repository: DukanRepository) : ViewModel() {
                     pJson.put("stock", product.stock)
                     pJson.put("category", product.category)
                     pJson.put("minStockThreshold", product.minStockThreshold)
+                    pJson.put("rating", product.rating)
                     productArray.put(pJson)
                 }
                 jsonObject.put("products", productArray)
@@ -322,6 +324,7 @@ class DukanViewModel(private val repository: DukanRepository) : ViewModel() {
                         val stock = pJson.getInt("stock")
                         val category = pJson.optString("category", "General")
                         val minStockThreshold = pJson.optInt("minStockThreshold", 5)
+                        val rating = pJson.optInt("rating", 5)
                         
                         repository.insertProduct(
                             Product(
@@ -331,7 +334,8 @@ class DukanViewModel(private val repository: DukanRepository) : ViewModel() {
                                 sellingPrice = sellingPrice,
                                 stock = stock,
                                 category = category,
-                                minStockThreshold = minStockThreshold
+                                minStockThreshold = minStockThreshold,
+                                rating = rating
                             )
                         )
                         restoredProductsCount++

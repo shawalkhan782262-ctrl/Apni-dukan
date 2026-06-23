@@ -12,7 +12,8 @@ data class Product(
     val sellingPrice: Double,  // Bechnay ki Qemat (Price at which owner sells item)
     val stock: Int,            // Kitni items available hain
     val category: String = "General",
-    val minStockThreshold: Int = 5 // Minimum stock threshold before alerting
+    val minStockThreshold: Int = 5, // Minimum stock threshold before alerting
+    val rating: Int = 5        // Product rating / quality score out of 5 stars
 ) : Serializable
 
 @Entity(tableName = "customers")

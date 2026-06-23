@@ -763,22 +763,6 @@ fun DashboardScreen(
                 }
             }
         }
-
-        // P&L Chart Composable
-        item {
-            ProfitLossChart(
-                dataPoints = chartData,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        // 30 Days Sales Revenue line chart Trend
-        item {
-            ThirtyDaysSalesChart(
-                dataPoints = thirtyDaysSalesData,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
     }
 
     // 2. Sales Ledger / Bikri (بکری کا کھاتا) Tab

@@ -30,6 +30,8 @@ import com.example.ui.components.InventoryTableComponent
 import androidx.compose.foundation.BorderStroke
 import com.example.ui.components.RestockLocatorBottomSheet
 import com.example.ui.components.LocalInventoryComponent
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.compose.ui.platform.LocalContext
 
@@ -319,6 +321,248 @@ fun ProductsScreen(
                 }
             }
 
+            // Store Analysis & Rating Hub slot
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f)
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .testTag("insights_hub_slot_card")
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Leaderboard,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Column {
+                                Text(
+                                    text = "Store Analysis & Rating Hub",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "اسٹاک اور درجہ بندی کا خلاصہ (Category Distribution & Rating)",
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // 1. Stock Category Distribution Chart (Mobile, Karyana, Electronics)
+                        val categoryStats = remember(products) {
+                            val stats = mutableMapOf("Mobile" to 0, "Karyana" to 0, "Electronics" to 0, "Others" to 0)
+                            products.forEach { p ->
+                                val cat = p.category.trim()
+                                if (cat.equals("Mobile", ignoreCase = true)) {
+                                    stats["Mobile"] = (stats["Mobile"] ?: 0) + p.stock
+                                } else if (cat.equals("Karyana", ignoreCase = true)) {
+                                    stats["Karyana"] = (stats["Karyana"] ?: 0) + p.stock
+                                } else if (cat.equals("Electronics", ignoreCase = true)) {
+                                    stats["Electronics"] = (stats["Electronics"] ?: 0) + p.stock
+                                } else {
+                                    stats["Others"] = (stats["Others"] ?: 0) + p.stock
+                                }
+                            }
+                            stats
+                        }
+
+                        val maxStockVal = remember(categoryStats) {
+                            val maxVal = categoryStats.values.maxOrNull() ?: 0
+                            if (maxVal == 0) 1 else maxVal
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = "Category Stock Distribution / اسٹاک کی تقسیم",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            
+                            categoryStats.forEach { (catName, stockVal) ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = catName,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.width(75.dp)
+                                    )
+                                    
+                                    // Bar representation of stock
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(10.dp)
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                    ) {
+                                        val barFraction = stockVal.toFloat() / maxStockVal
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .fillMaxWidth(if (barFraction > 0f) barFraction else 0.01f)
+                                                .clip(RoundedCornerShape(3.dp))
+                                                .background(
+                                                    color = when (catName) {
+                                                        "Mobile" -> Color(0xFF1976D2)
+                                                        "Karyana" -> Color(0xFF388E3C)
+                                                        "Electronics" -> Color(0xFFF57C00)
+                                                        else -> Color(0xFF7B1FA2)
+                                                    }
+                                                )
+                                        )
+                                    }
+                                    
+                                    Text(
+                                        text = "$stockVal pcs",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.width(50.dp),
+                                        textAlign = TextAlign.End
+                                    )
+                                }
+                            }
+                        }
+
+                        Divider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+
+                        // 2. Average product rating & highest rated items
+                        val avgRating = remember(products) {
+                            if (products.isEmpty()) 0.0 else products.map { it.rating }.average()
+                        }
+
+                        val topRatedItems = remember(products) {
+                            products.sortedByDescending { it.rating }.take(3)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Rating Score Box
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f), RoundedCornerShape(8.dp)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(6.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "Avg Rating",
+                                        fontSize = 9.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = String.format("%.1f", avgRating),
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = Color(0xFFFFB300)
+                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(1.dp)
+                                    ) {
+                                        val fullStars = avgRating.toInt()
+                                        repeat(fullStars) {
+                                            Icon(
+                                                imageVector = Icons.Default.Star,
+                                                contentDescription = null,
+                                                tint = Color(0xFFFFB300),
+                                                modifier = Modifier.size(9.dp)
+                                            )
+                                        }
+                                        repeat(5 - fullStars) {
+                                            Icon(
+                                                imageVector = Icons.Default.StarBorder,
+                                                contentDescription = null,
+                                                tint = Color.LightGray,
+                                                modifier = Modifier.size(9.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Top rated items
+                            Column(
+                                modifier = Modifier.weight(1.5f),
+                                verticalArrangement = Arrangement.spacedBy(3.dp)
+                            ) {
+                                Text(
+                                    text = "High Rated Items (مشہور مال):",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                if (topRatedItems.isEmpty()) {
+                                    Text(
+                                        text = "No rated products yet",
+                                        fontSize = 9.sp,
+                                        color = Color.Gray
+                                    )
+                                } else {
+                                    topRatedItems.forEach { item ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = "• ${item.name}",
+                                                fontSize = 10.sp,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Row(horizontalArrangement = Arrangement.spacedBy(1.dp)) {
+                                                repeat(item.rating) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Star,
+                                                        contentDescription = null,
+                                                        tint = Color(0xFFFFB300),
+                                                        modifier = Modifier.size(8.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // Products List
             if (filteredProducts.isEmpty()) {
                 Box(
@@ -410,8 +654,8 @@ fun ProductsScreen(
         ProductDialog(
             title = "Naya Maal / Add Product",
             onDismiss = { showAddDialog = false },
-            onSave = { name, cost, sell, stock, cat, thresh ->
-                viewModel.addProduct(name, cost, sell, stock, cat, thresh)
+            onSave = { name, cost, sell, stock, cat, thresh, rating ->
+                viewModel.addProduct(name, cost, sell, stock, cat, thresh, rating)
                 showAddDialog = false
             }
         )
@@ -423,7 +667,7 @@ fun ProductsScreen(
             title = "Maal Edit Karain / Edit Product",
             product = product,
             onDismiss = { selectedProductForEdit = null },
-            onSave = { name, cost, sell, stock, cat, thresh ->
+            onSave = { name, cost, sell, stock, cat, thresh, rating ->
                 viewModel.updateProduct(
                     product.copy(
                         name = name,
@@ -431,7 +675,8 @@ fun ProductsScreen(
                         sellingPrice = sell,
                         stock = stock,
                         category = cat,
-                        minStockThreshold = thresh
+                        minStockThreshold = thresh,
+                        rating = rating
                     )
                 )
                 selectedProductForEdit = null
@@ -512,6 +757,20 @@ fun ProductItemCard(
                         label = { Text(product.category, fontSize = 10.sp) },
                         modifier = Modifier.height(20.dp)
                     )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(1.dp),
+                        modifier = Modifier.padding(start = 4.dp)
+                    ) {
+                        repeat(product.rating) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFFFB300),
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
                         onClick = { onQrClick() },
@@ -607,7 +866,7 @@ fun ProductDialog(
     title: String,
     product: Product? = null,
     onDismiss: () -> Unit,
-    onSave: (String, Double, Double, Int, String, Int) -> Unit,
+    onSave: (String, Double, Double, Int, String, Int, Int) -> Unit,
     onDelete: (() -> Unit)? = null
 ) {
     var name by remember { mutableStateOf(product?.name ?: "") }
@@ -616,6 +875,7 @@ fun ProductDialog(
     var stock by remember { mutableStateOf(product?.stock?.toString() ?: "") }
     var category by remember { mutableStateOf(product?.category ?: "General") }
     var minStockThreshold by remember { mutableStateOf(product?.minStockThreshold?.toString() ?: "5") }
+    var rating by remember { mutableStateOf(product?.rating ?: 5) }
 
     var hasError by remember { mutableStateOf(false) }
 
@@ -681,6 +941,35 @@ fun ProductDialog(
                     singleLine = true
                 )
 
+                // Rating system selection UI
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Product Rating / Quality Score (درجہ بندی)",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        (1..5).forEach { star ->
+                            Icon(
+                                imageVector = if (star <= rating) Icons.Default.Star else Icons.Default.StarBorder,
+                                contentDescription = "Rate $star stars",
+                                tint = if (star <= rating) Color(0xFFFFB300) else Color.Gray,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clickable { rating = star }
+                                    .testTag("dialog_rating_star_$star")
+                            )
+                        }
+                    }
+                }
+
                 if (hasError) {
                     Text(
                         text = "Meherbani kar k sari details durust add karay.",
@@ -699,7 +988,7 @@ fun ProductDialog(
                     val stk = stock.toIntOrNull()
                     val thresh = minStockThreshold.toIntOrNull() ?: 5
                     if (name.isNotEmpty() && cost != null && sell != null && stk != null && thresh >= 0) {
-                        onSave(name, cost, sell, stk, category, thresh)
+                        onSave(name, cost, sell, stk, category, thresh, rating)
                     } else {
                         hasError = true
                     }

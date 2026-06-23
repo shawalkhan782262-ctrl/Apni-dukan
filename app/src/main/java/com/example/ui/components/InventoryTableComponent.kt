@@ -275,12 +275,30 @@ fun InventoryTableComponent(
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.testTag("inventory_item_name_${product.id}")
                                 )
-                                Text(
-                                    text = product.category,
-                                    fontSize = 9.sp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = product.category,
+                                        fontSize = 9.sp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(1.dp)
+                                    ) {
+                                        repeat(product.rating) {
+                                            Icon(
+                                                imageVector = Icons.Default.Star,
+                                                contentDescription = null,
+                                                tint = Color(0xFFFFB300),
+                                                modifier = Modifier.size(8.dp)
+                                            )
+                                        }
+                                    }
+                                }
                             }
 
                             // Column 2: Kharid / Farokht prices + Margin
