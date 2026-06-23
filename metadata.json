@@ -1,0 +1,6 @@
+{
+  "name": "Apni Dukan",
+  "description": "Multi-category ledger and tracker 'Apni Dukan' for Mobile, Karyana (Grocery) and Electronics shops, owned by SHAWAL. Features real-time stock limits, automated alerts, and offline JSON state backups.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
